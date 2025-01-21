@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Registration Form</title>
+</head>
+
+<body>
+    <div class="relative flex min-h-screen flex-col justify-center overflow-hidden py-6 bg-gray-50">
+        <div
+            class="relative bg-white px-6 pt-5 pb-5 shadow-xl ring-1 ring-gray-900/5 sm:mx-auto sm:max-w-lg sm:rounded-lg sm:px-10">
+            <div class="mx-auto max-w-md">
+                <h2 class="text-3xl text-center font-bold leading-tight mb-6">
+                    Registration Form
+                </h2>
+                <form id="user_form">
+                    <!-- Name -->
+                    <label for="name" class="text-md font-medium text-gray-700">Name</label>
+                    <input required type="text" id="name" name="name" placeholder="Enter full name"
+                        class="bg-gray-100 w-full rounded-lg shadow-md px-4 py-3 mb-5 placeholder-gray-500">
+
+                    <!-- Email -->
+                    <label for="email" class="text-md font-medium text-gray-700">Email</label>
+                    <input required type="email" id="email" name="email" placeholder="Enter email"
+                        class="bg-gray-100 w-full rounded-lg shadow-md px-4 py-3 mb-5 placeholder-gray-500">
+
+                    <!-- Password -->
+                    <label for="password" class="text-md font-medium text-gray-700">Password</label>
+                    <input required type="password" id="password" name="password" placeholder="Enter password"
+                        class="bg-gray-100 w-full rounded-lg shadow-md px-4 py-3 mb-5 placeholder-gray-500">
+
+                    <!-- Date of Birth -->
+                    <label for="dob" class="text-md font-medium text-gray-700">Date of Birth</label>
+                    <input required type="date" id="dob" name="dob"
+                        class="bg-gray-100 w-full rounded-lg shadow-md px-4 py-3 mb-5 placeholder-gray-500">
+
+                    <!-- Terms and Conditions -->
+                    <div class="flex items-center mb-5">
+                        <input required type="checkbox" id="terms" name="terms"
+                            class="h-5 w-5 text-green-600 rounded focus:ring-2 focus:ring-offset-2 focus:ring-green-400">
+                        <label for="terms" class="ml-2 text-gray-700">Accept Terms & Conditions</label>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div class="text-left">
+                        <button type="submit"
+                            class="bg-green-500 text-white py-3 px-6 rounded-lg font-medium text-lg hover:bg-green-600">
+                            Submit
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Table to Display Submitted Data -->
+        <div
+            class="relative bg-white mt-10 px-6 pt-5 pb-5 shadow-xl ring-1 ring-gray-900/5 sm:mx-auto sm:max-w-lg sm:rounded-lg sm:px-10">
+            <h3 class="text-2xl text-center font-bold leading-tight mb-6">Submitted Entries</h3>
+            <table class="min-w-full text-center border-collapse border border-gray-300">
+                <thead class="bg-gray-100">
+                    <tr>
+                        <th class="border border-gray-300 px-4 py-2">Name</th>
+                        <th class="border border-gray-300 px-4 py-2">Email</th>
+                        <th class="border border-gray-300 px-4 py-2">Password</th>
+                        <th class="border border-gray-300 px-4 py-2">Date of Birth</th>
+                        <th class="border border-gray-300 px-4 py-2">Accepted Terms</th>
+                    </tr>
+                </thead>
+                <tbody id="entries_table_body"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // Form and Table
+        const form = document.getElementById("user_form");
+        const tableBody = document.getElementById("entries_table_body");
+
+        // Function to get age from date of birth
+        function calculateAge(dob) {
+            const today = new Date();
+            const birthDate = new Date(dob);
+            let age = today.getFullYear() - birthDate.getFullYear();
+            const m = today.getMonth() - birthDate.getMonth();
+            if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+                age--;
+            }
+            return age;
+        }
+
+        // Form Submission Handler
+        form.addEventListener("submit", function (event) {
+            event.preventDefault();
+
+            // Collect form data
+            const name = document.getElementById("name").value;
+            const email = document.getElementById("email").value;
+            const password = document.getElementById("password").value;
+            const dob = document.getElementById("dob").value;
+            const terms = document.getElementById("terms").checked;
+
+            // Validate date of birth (18-55 years)
+            const age = calculateAge(dob);
+            if (age < 18 || age > 55) {
+                alert("Age must be between 18 and 55 years.");
+                return;
+            }
+
+            // Store data in local storage
+            const userEntries = JSON.parse(localStorage.getItem("userEntries")) || [];
+            userEntries.push({ name, email, password, dob, terms });
+            localStorage.setItem("userEntries", JSON.stringify(userEntries));
+
+            // Add data to the table
+            const row = document.createElement("tr");
+            row.innerHTML = `
+                <td class="border border-gray-300 px-4 py-2">${name}</td>
+                <td class="border border-gray-300 px-4 py-2">${email}</td>
+                <td class="border border-gray-300 px-4 py-2">${password}</td>
+                <td class="border border-gray-300 px-4 py-2">${dob}</td>
+                <td class="border border-gray-300 px-4 py-2">${terms}</td>
+            `;
+            tableBody.appendChild(row);
+
+            // Reset the form
+            form.reset();
+        });
+
+        // Load existing entries from local storage
+        document.addEventListener("DOMContentLoaded", () => {
+            const userEntries = JSON.parse(localStorage.getItem("userEntries")) || [];
+            userEntries.forEach(entry => {
+                const row = document.createElement("tr");
+                row.innerHTML = `
+                    <td class="border border-gray-300 px-4 py-2">${entry.name}</td>
+                    <td class="border border-gray-300 px-4 py-2">${entry.email}</td>
+                    <td class="border border-gray-300 px-4 py-2">${entry.password}</td>
+                    <td class="border border-gray-300 px-4 py-2">${entry.dob}</td>
+                    <td class="border border-gray-300 px-4 py-2">${entry.terms}</td>
+                `;
+                tableBody.appendChild(row);
+            });
+        });
+    </script>
+</body>
+
+</html>
